@@ -18,7 +18,8 @@
 
 // Ten jumper pairs, plus MOSI-MISO on the separate SPI header.
 // USB commands: t full suite, e Ethernet, w new SD file, f flash read,
-// p blank-flash program/erase, b USER button, c SD detect, m header PWM.
+// p blank-flash program/erase, b USER button, c SD detect, m header PWM,
+// a DAC-to-ADC sweep followed by a two-minute midpoint hold for a voltmeter.
 const uint16_t pairs[][2] = {{0,1},{2,3},{4,5},{6,7},{8,9},{10,11},{12,13},
                             {A0,A1},{A2,A3},{A4,A5}};
 TwoWire &stemma = Wire; // The Metro variant routes Wire to PB11/PB10.
@@ -78,6 +79,9 @@ void loop() {
     } else if (command == 'm') {
       ran = true;
       testHeaderPWM();
+    } else if (command == 'a') {
+      ran = true;
+      testDAC();
     } else {
       SerialUSB.write(command);
     }
@@ -92,6 +96,44 @@ void loop() {
     metroNeoPixelWrite(color == 0 ? 12 : 0, color == 1 ? 12 : 0, color == 2 ? 12 : 0);
     color = (color + 1) % 3;
   }
+}
+
+void testDAC() {
+  // The fixture already connects DAC1 (A0/PA4) to ADC3 (A1/PA3).
+  // A shared reference makes this a functional check, not absolute calibration.
+  pinMode(A0, INPUT);
+  pinMode(A1, INPUT);
+  analogWriteResolution(12);
+  analogReadResolution(12);
+  bool pass = true;
+  for (unsigned level = 1024; level <= 3072; level += 1024) {
+    analogWrite(A0, level);
+    delay(10);
+    analogRead(A1); // Discard the first conversion after changing the level.
+    uint32_t sum = 0;
+    for (unsigned sample = 0; sample < 32; sample++) sum += analogRead(A1);
+    int measured = sum / 32;
+    SerialUSB.print("DAC A0="); SerialUSB.print(level);
+    SerialUSB.print(" ADC A1="); SerialUSB.print(measured);
+    SerialUSB.print(" error counts="); SerialUSB.print(measured - (int)level);
+    SerialUSB.print("\n\r");
+    pass &= abs(measured - (int)level) <= 64;
+  }
+  result("DAC A0 to ADC A1 at quarter/half/three-quarter scale", pass);
+  if (pass) {
+    analogWrite(A0, 2048);
+    SerialUSB.print("A0 holding half the analog supply (about 1.65 V) for two minutes.\n\r");
+    SerialUSB.print("Measure A0 and 3.3 V relative to GND; send any byte to finish early.\n\r");
+    uint32_t started = millis();
+    while (millis() - started < 120000 && !SerialUSB.available()) delay(1);
+    while (SerialUSB.available()) SerialUSB.read();
+  }
+  // pinMode alone does not disable the DAC's analog output driver.
+  CH32RV_DAC_CTLR &= ~CH32RV_DAC_CTLR_EN1;
+  pinMode(A0, INPUT);
+  pinMode(A1, INPUT);
+  analogWriteResolution(8);
+  SerialUSB.print("DAC test finished; A0 and A1 released.\n\r");
 }
 
 void startCardDetectTest() {
