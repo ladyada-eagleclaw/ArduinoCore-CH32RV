@@ -19,7 +19,8 @@
 // Ten jumper pairs, plus MOSI-MISO on the separate SPI header.
 // USB commands: t full suite, e Ethernet, w new SD file, f flash read,
 // p blank-flash program/erase, b USER button, c SD detect, m header PWM,
-// a DAC-to-ADC sweep followed by a two-minute midpoint hold for a voltmeter.
+// a DAC-to-ADC sweep followed by a two-minute midpoint hold for a voltmeter,
+// v standalone midpoint hold (no jumper needed), x release the hold.
 const uint16_t pairs[][2] = {{0,1},{2,3},{4,5},{6,7},{8,9},{10,11},{12,13},
                             {A0,A1},{A2,A3},{A4,A5}};
 TwoWire &stemma = Wire; // The Metro variant routes Wire to PB11/PB10.
@@ -43,6 +44,7 @@ int cardRaw = LOW;
 int cardStable = LOW;
 uint32_t cardChangedAt = 0;
 uint32_t cardStartedAt = 0;
+bool dacHoldActive = false;
 
 void setup() {
   SerialUSB.setBootTouchEnabled(true);
@@ -60,6 +62,12 @@ void loop() {
   }
   while (SerialUSB.available()) {
     char command = SerialUSB.read();
+    // Release the analog driver before another command can drive the jumper
+    // partner as a digital output. Ignore terminal line endings after v.
+    if (dacHoldActive && command != '\r' && command != '\n') {
+      releaseDAC();
+      SerialUSB.print("DAC meter hold ended; A0 and A1 released.\n\r");
+    }
     if (command == 't') {
       ran = true;
       runTests();
@@ -82,6 +90,16 @@ void loop() {
     } else if (command == 'a') {
       ran = true;
       testDAC();
+    } else if (command == 'v') {
+      ran = true;
+      pinMode(A1, INPUT);
+      analogWriteResolution(12);
+      analogWrite(A0, 2048);
+      dacHoldActive = true;
+      SerialUSB.print("A0 holding about 1.65 V; no A0-A1 jumper required.\n\r");
+      SerialUSB.print("No timeout. Send x or another command to release A0.\n\r");
+    } else if (command == 'x') {
+      // The active hold was released above.
     } else {
       SerialUSB.write(command);
     }
@@ -128,12 +146,17 @@ void testDAC() {
     while (millis() - started < 120000 && !SerialUSB.available()) delay(1);
     while (SerialUSB.available()) SerialUSB.read();
   }
+  releaseDAC();
+  SerialUSB.print("DAC test finished; A0 and A1 released.\n\r");
+}
+
+void releaseDAC() {
   // pinMode alone does not disable the DAC's analog output driver.
   CH32RV_DAC_CTLR &= ~CH32RV_DAC_CTLR_EN1;
   pinMode(A0, INPUT);
   pinMode(A1, INPUT);
   analogWriteResolution(8);
-  SerialUSB.print("DAC test finished; A0 and A1 released.\n\r");
+  dacHoldActive = false;
 }
 
 void startCardDetectTest() {
