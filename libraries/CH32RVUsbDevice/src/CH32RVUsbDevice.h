@@ -65,14 +65,22 @@ enum CH32RVUsbDeviceMsOs20Layout : uint8_t {
     CH32RV_USB_DEVICE_MS_OS_20_SUBSETS,
 };
 
-/* Every default string and identity. They are changed at run time, not
- * from build_opt.h: CH32RVUsbDeviceConfig, setName() on a class object,
- * CH32RVUsbDeviceMsc::vendorID() and the like. */
-#define CH32RV_USB_DEVICE_VID 0x1209          /* pid.codes test VID:PID */
+/* Product variants may override the default device identity. Sketches can
+ * still change it at run time through CH32RVUsbDeviceConfig. Class/interface
+ * names use setName(), CH32RVUsbDeviceMsc::vendorID() and the like. */
+#ifndef CH32RV_USB_DEVICE_VID
+#define CH32RV_USB_DEVICE_VID 0x1209 /* pid.codes test VID:PID */
+#endif
+#ifndef CH32RV_USB_DEVICE_PID
 #define CH32RV_USB_DEVICE_PID 0x0001
+#endif
 #define CH32RV_USB_DEVICE_VERSION 0x0100
+#ifndef CH32RV_USB_DEVICE_MANUFACTURER
 #define CH32RV_USB_DEVICE_MANUFACTURER "ch32-riscv-ug"
+#endif
+#ifndef CH32RV_USB_DEVICE_PRODUCT
 #define CH32RV_USB_DEVICE_PRODUCT "CH32RV Arduino"
+#endif
 /* Interface names (iInterface) - what the host shows for each function. */
 #define CH32RV_USB_CDC_NAME "CDC"
 #define CH32RV_USB_HID_NAME "HID"
@@ -129,7 +137,11 @@ struct CH32RVUsbDeviceConfig {
      * and 20 bytes of RAM. false leaves the interface out; the code stays
      * linked, since this is a run-time choice - -DCH32RV_USB_NO_DEFAULT_DFU in
      * build_opt.h removes it from the build as well. */
+#ifdef CH32RV_USB_DEFAULT_DFU_RUNTIME
+    bool dfuRuntime = CH32RV_USB_DEFAULT_DFU_RUNTIME;
+#else
     bool dfuRuntime = true;
+#endif
     /* Names of the two interfaces a sketch has no object for: the default DFU
      * runtime (CH32RV_USB_DFU_RUNTIME_NAME - see there before changing it)
      * and the HID interface all HID classes share. nullptr keeps the default. */

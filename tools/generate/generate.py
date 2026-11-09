@@ -4362,8 +4362,10 @@ def main() -> int:
         series = re.search(rf"^{board_id}\.build\.series=(\S+)", text, re.M).group(1)
         part = re.search(rf"^{board_id}\.build\.part=(\S+)", text, re.M).group(1)
         variant_text = outputs[args.platform / "variants" / series / "pins_arduino.h"]
-        text += "\n".join(periph_menu(board_id, series, [part], pins_by_kind,
-                                     remap, forbidden, variant_text)) + "\n"
+        # Product boards may fix their routed buses instead of exposing silicon menus.
+        if not re.search(rf"^{board_id}\.build\.periph_defines=", text, re.M):
+            text += "\n".join(periph_menu(board_id, series, [part], pins_by_kind,
+                                         remap, forbidden, variant_text)) + "\n"
         # and the Floating Point menu every board has
         flash = int(re.search(rf"^{board_id}\.upload\.maximum_size=(\d+)", text, re.M).group(1))
         text += "\n" + "\n".join(rtlib_menu(board_id, flash) + parsefloat_menu(board_id)) + "\n"

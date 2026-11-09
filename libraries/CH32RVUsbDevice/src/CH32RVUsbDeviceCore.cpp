@@ -1119,7 +1119,9 @@ bool CH32RVUsbDevice::controlStatus()
     while ((uint32_t)(millis() - t0) < 50u) {
     }
     noInterrupts();
-#ifdef CH32RV_USB_FACTORY_ISP_ENTRY
+#ifdef CH32RV_USB_BOOTLOADER_ENTRY
+    CH32RV_USB_BOOTLOADER_ENTRY();
+#elif defined(CH32RV_USB_FACTORY_ISP_ENTRY)
     port_set_boot_mode();
 #endif
     CH32RV_SYSTEM_RESET();

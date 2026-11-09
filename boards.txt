@@ -7227,6 +7227,144 @@ CH32H417.build.periph_defines={build.usart1_mode} {build.usart2_mode} {build.usa
 
 # Product boards (L2), from tools/generate/boards/*.txt
 
+ADAFRUIT_METRO_CH32V407.name=Adafruit Metro CH32V407 (TinyUF2)
+ADAFRUIT_METRO_CH32V407.build.board=ADAFRUIT_METRO_CH32V407
+ADAFRUIT_METRO_CH32V407.build.part=CH32V407RET6
+ADAFRUIT_METRO_CH32V407.build.core=arduino
+ADAFRUIT_METRO_CH32V407.build.variant=ADAFRUIT_METRO_CH32V407
+ADAFRUIT_METRO_CH32V407.build.series=CH32V407
+ADAFRUIT_METRO_CH32V407.build.f_cpu=200000000L
+ADAFRUIT_METRO_CH32V407.build.march=rv32imac_zicsr
+ADAFRUIT_METRO_CH32V407.build.mabi=ilp32
+ADAFRUIT_METRO_CH32V407.build.startup_defines=-DCH32RV_MSTATUS_INIT=0x688 -DCH32RV_INTSYSCR_INIT=0x07 -DCH32RV_CORECFGR=0x21 -DCH32RV_CSR_BC1=0x01 -DCH32RV_CSR805_CLR=0x100
+ADAFRUIT_METRO_CH32V407.build.vector_variant=v4x7
+ADAFRUIT_METRO_CH32V407.build.clock_init=clock_init_ch32v407.h
+ADAFRUIT_METRO_CH32V407.build.core_defines=-DCH32RV_GPIO_PORT_WIDTH=16 -DCH32RV_SYSTICK_64=0 -DCH32RV_SYSTICK_V103=0 -DCH32RV_HSI_HZ=20000000 -DCH32RV_ADC_BITS=12 -DCH32RV_I2C_HAS_RTR=1 -DCH32RV_HPRE_LINEAR=0 -DCH32RV_FLASH_ACTLR_LATENCY_MASK=0x0u -DCH32RV_ADC_MAX_HZ=30000000u -DCH32RV_LSI_HZ=40000u -DCH32RV_IWDG_BASE=0x40003000u -DCH32RV_RNG_BASE=0x40023c00u -DCH32RV_DM_DATA0_ADDR=0xe0000340u -DCH32RV_AFIO_PCFR2_OFFSET=0x1cu
+ADAFRUIT_METRO_CH32V407.build.clock_defines=-DCH32RV_FLASH_LATENCY=0 -DCH32RV_CLOCK_SYSCLK_HZ=200000000 -DCH32RV_CLOCK_USE_PLL=1 -DCH32RV_CLOCK_PLL_MASK=0x3f0000u -DCH32RV_CLOCK_PLL_VALUE=0x40000u -DCH32RV_CLOCK_EXTEN_ADDR=0x0u -DCH32RV_CLOCK_EXTEN_BITS=0x0u -DCH32RV_CLOCK_SYSPLL_ADDR=0x4002102cu -DCH32RV_CLOCK_SYSPLL_MASK=0xe700u -DCH32RV_CLOCK_SYSPLL_VALUE=0xc000u -DCH32RV_CLOCK_SYSPLL_POLL_MASK=0xe000u -DCH32RV_CLOCK_SYSPLL_POLL_VALUE=0xc000u -DCH32RV_CLOCK_SYSPLL_ON=0x1000u -DCH32RV_CLOCK_ACTLR_ADDR=0x40022010u -DCH32RV_CLOCK_ACTLR_MASK=0x6000000u -DCH32RV_CLOCK_ACTLR_VALUE=0x2000000u
+ADAFRUIT_METRO_CH32V407.build.clock_src_defines=-DCH32RV_CLOCK_HSE_HZ=25000000 -DCH32RV_CLOCK_HSE_USE_PLL=1 -DCH32RV_CLOCK_HSE_PLL_MASK=0x3f0000u -DCH32RV_CLOCK_HSE_PLL_VALUE=0x10000u
+ADAFRUIT_METRO_CH32V407.build.ldscript=metro_tinyuf2.ld
+ADAFRUIT_METRO_CH32V407.upload.maximum_size=491520
+ADAFRUIT_METRO_CH32V407.upload.maximum_data_size=204800
+ADAFRUIT_METRO_CH32V407.build.ch32rv_chip=CH32V407RET6
+ADAFRUIT_METRO_CH32V407.menu.pnum.ANY=CH32V407RET6 (fixed)
+ADAFRUIT_METRO_CH32V407.monitor_port.serial.baudrate=115200
+
+# STEMMA/header PB10/PB11 use the existing software I2C controller.
+ADAFRUIT_METRO_CH32V407.build.periph_defines=-DCH32RV_I2C1_MODE=3
+ADAFRUIT_METRO_CH32V407.upload.protocol=serial
+ADAFRUIT_METRO_CH32V407.upload.erase_args=--erase sector
+ADAFRUIT_METRO_CH32V407.vid.0=0x239A
+ADAFRUIT_METRO_CH32V407.pid.0=0x817D
+ADAFRUIT_METRO_CH32V407.vid.1=0x239A
+ADAFRUIT_METRO_CH32V407.pid.1=0x017D
+ADAFRUIT_METRO_CH32V407.upload_port.0.vid=0x239A
+ADAFRUIT_METRO_CH32V407.upload_port.0.pid=0x817D
+
+ADAFRUIT_METRO_CH32V407.menu.rtlib.fltf=Float (32-bit) + printf %f (default)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.fltf.build.fp_flags=-DCH32RV_FP_FLOAT=1 -fsingle-precision-constant -DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V407.menu.rtlib.fltf.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V407.menu.rtlib.flt=Float (32-bit)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.flt.build.fp_flags=-DCH32RV_FP_FLOAT=1 -fsingle-precision-constant
+ADAFRUIT_METRO_CH32V407.menu.rtlib.flt.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dbl=Double (64-bit)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dbl.build.fp_flags=
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dbl.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dblf=Double (64-bit) + printf %f
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dblf.build.fp_flags=-DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dblf.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofp=Double (64-bit) + newlib printf %f %e %g (+~21 KB)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofp.build.fp_flags=-DCH32RV_PRINTF_NEWLIB=1
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofp.build.rtlib_flags=-Wl,-u,_printf_float
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofs=Double (64-bit) + newlib scanf %f (+~24 KB)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofs.build.fp_flags=
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofs.build.rtlib_flags=-Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dblfs=Double (64-bit) + printf %f + newlib scanf %f (+~24 KB)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dblfs.build.fp_flags=-DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V407.menu.rtlib.dblfs.build.rtlib_flags=-Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V407.menu.rtlib.fltfs=Float (32-bit) + printf %f + newlib scanf %f (+~24 KB)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.fltfs.build.fp_flags=-DCH32RV_FP_FLOAT=1 -fsingle-precision-constant -DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V407.menu.rtlib.fltfs.build.rtlib_flags=-Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofps=Double (64-bit) + newlib printf/scanf %f %e %g (+~31 KB)
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofps.build.fp_flags=-DCH32RV_PRINTF_NEWLIB=1
+ADAFRUIT_METRO_CH32V407.menu.rtlib.nanofps.build.rtlib_flags=-Wl,-u,_printf_float -Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.auto=As the arithmetic: integers under Float, double under Double (default)
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.auto.build.parse_defines=
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.int=In integers (the nearest float to 11 digits)
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.int.build.parse_defines=-DCH32RV_PARSE_FLOAT=2
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.float=In float (smallest; the last bit off on one input in eight)
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.float.build.parse_defines=-DCH32RV_PARSE_FLOAT=3
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.double=In double (the nearest float; links double arithmetic)
+ADAFRUIT_METRO_CH32V407.menu.parsefloat.double.build.parse_defines=-DCH32RV_PARSE_FLOAT=1
+
+ADAFRUIT_METRO_CH32V467.name=Adafruit Metro CH32V467 (TinyUF2)
+ADAFRUIT_METRO_CH32V467.build.board=ADAFRUIT_METRO_CH32V467
+ADAFRUIT_METRO_CH32V467.build.part=CH32V467RET6
+ADAFRUIT_METRO_CH32V467.build.core=arduino
+ADAFRUIT_METRO_CH32V467.build.variant=ADAFRUIT_METRO_CH32V467
+ADAFRUIT_METRO_CH32V467.build.series=CH32V467
+ADAFRUIT_METRO_CH32V467.build.f_cpu=200000000L
+ADAFRUIT_METRO_CH32V467.build.march=rv32imac_zicsr
+ADAFRUIT_METRO_CH32V467.build.mabi=ilp32
+ADAFRUIT_METRO_CH32V467.build.startup_defines=-DCH32RV_MSTATUS_INIT=0x688 -DCH32RV_INTSYSCR_INIT=0x07 -DCH32RV_CORECFGR=0x21 -DCH32RV_CSR_BC1=0x01 -DCH32RV_CSR805_CLR=0x100
+ADAFRUIT_METRO_CH32V467.build.vector_variant=v4x7
+ADAFRUIT_METRO_CH32V467.build.clock_init=clock_init_ch32v407.h
+ADAFRUIT_METRO_CH32V467.build.core_defines=-DCH32RV_GPIO_PORT_WIDTH=16 -DCH32RV_SYSTICK_64=0 -DCH32RV_SYSTICK_V103=0 -DCH32RV_HSI_HZ=20000000 -DCH32RV_ADC_BITS=12 -DCH32RV_I2C_HAS_RTR=1 -DCH32RV_HPRE_LINEAR=0 -DCH32RV_FLASH_ACTLR_LATENCY_MASK=0x0u -DCH32RV_ADC_MAX_HZ=30000000u -DCH32RV_LSI_HZ=40000u -DCH32RV_IWDG_BASE=0x40003000u -DCH32RV_RNG_BASE=0x40023c00u -DCH32RV_DM_DATA0_ADDR=0xe0000340u -DCH32RV_AFIO_PCFR2_OFFSET=0x1cu
+ADAFRUIT_METRO_CH32V467.build.clock_defines=-DCH32RV_FLASH_LATENCY=0 -DCH32RV_CLOCK_SYSCLK_HZ=200000000 -DCH32RV_CLOCK_USE_PLL=1 -DCH32RV_CLOCK_PLL_MASK=0x3f0000u -DCH32RV_CLOCK_PLL_VALUE=0x40000u -DCH32RV_CLOCK_EXTEN_ADDR=0x0u -DCH32RV_CLOCK_EXTEN_BITS=0x0u -DCH32RV_CLOCK_SYSPLL_ADDR=0x4002102cu -DCH32RV_CLOCK_SYSPLL_MASK=0xe700u -DCH32RV_CLOCK_SYSPLL_VALUE=0xc000u -DCH32RV_CLOCK_SYSPLL_POLL_MASK=0xe000u -DCH32RV_CLOCK_SYSPLL_POLL_VALUE=0xc000u -DCH32RV_CLOCK_SYSPLL_ON=0x1000u -DCH32RV_CLOCK_ACTLR_ADDR=0x40022010u -DCH32RV_CLOCK_ACTLR_MASK=0x6000000u -DCH32RV_CLOCK_ACTLR_VALUE=0x2000000u
+ADAFRUIT_METRO_CH32V467.build.clock_src_defines=-DCH32RV_CLOCK_HSE_HZ=25000000 -DCH32RV_CLOCK_HSE_USE_PLL=1 -DCH32RV_CLOCK_HSE_PLL_MASK=0x3f0000u -DCH32RV_CLOCK_HSE_PLL_VALUE=0x10000u
+ADAFRUIT_METRO_CH32V467.build.ldscript=metro_tinyuf2.ld
+ADAFRUIT_METRO_CH32V467.upload.maximum_size=491520
+ADAFRUIT_METRO_CH32V467.upload.maximum_data_size=204800
+ADAFRUIT_METRO_CH32V467.build.ch32rv_chip=CH32V467RET6
+ADAFRUIT_METRO_CH32V467.menu.pnum.ANY=CH32V467RET6 (fixed)
+ADAFRUIT_METRO_CH32V467.monitor_port.serial.baudrate=115200
+
+# STEMMA/header PB10/PB11 use the existing software I2C controller.
+ADAFRUIT_METRO_CH32V467.build.periph_defines=-DCH32RV_I2C1_MODE=3
+ADAFRUIT_METRO_CH32V467.upload.protocol=serial
+ADAFRUIT_METRO_CH32V467.upload.erase_args=--erase sector
+ADAFRUIT_METRO_CH32V467.vid.0=0x239A
+ADAFRUIT_METRO_CH32V467.pid.0=0x817F
+ADAFRUIT_METRO_CH32V467.vid.1=0x239A
+ADAFRUIT_METRO_CH32V467.pid.1=0x017F
+ADAFRUIT_METRO_CH32V467.upload_port.0.vid=0x239A
+ADAFRUIT_METRO_CH32V467.upload_port.0.pid=0x817F
+
+ADAFRUIT_METRO_CH32V467.menu.rtlib.fltf=Float (32-bit) + printf %f (default)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.fltf.build.fp_flags=-DCH32RV_FP_FLOAT=1 -fsingle-precision-constant -DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V467.menu.rtlib.fltf.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V467.menu.rtlib.flt=Float (32-bit)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.flt.build.fp_flags=-DCH32RV_FP_FLOAT=1 -fsingle-precision-constant
+ADAFRUIT_METRO_CH32V467.menu.rtlib.flt.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dbl=Double (64-bit)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dbl.build.fp_flags=
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dbl.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dblf=Double (64-bit) + printf %f
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dblf.build.fp_flags=-DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dblf.build.rtlib_flags=
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofp=Double (64-bit) + newlib printf %f %e %g (+~21 KB)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofp.build.fp_flags=-DCH32RV_PRINTF_NEWLIB=1
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofp.build.rtlib_flags=-Wl,-u,_printf_float
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofs=Double (64-bit) + newlib scanf %f (+~24 KB)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofs.build.fp_flags=
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofs.build.rtlib_flags=-Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dblfs=Double (64-bit) + printf %f + newlib scanf %f (+~24 KB)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dblfs.build.fp_flags=-DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V467.menu.rtlib.dblfs.build.rtlib_flags=-Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V467.menu.rtlib.fltfs=Float (32-bit) + printf %f + newlib scanf %f (+~24 KB)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.fltfs.build.fp_flags=-DCH32RV_FP_FLOAT=1 -fsingle-precision-constant -DCH32RV_PRINTF_FLOAT=1
+ADAFRUIT_METRO_CH32V467.menu.rtlib.fltfs.build.rtlib_flags=-Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofps=Double (64-bit) + newlib printf/scanf %f %e %g (+~31 KB)
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofps.build.fp_flags=-DCH32RV_PRINTF_NEWLIB=1
+ADAFRUIT_METRO_CH32V467.menu.rtlib.nanofps.build.rtlib_flags=-Wl,-u,_printf_float -Wl,-u,_scanf_float
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.auto=As the arithmetic: integers under Float, double under Double (default)
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.auto.build.parse_defines=
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.int=In integers (the nearest float to 11 digits)
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.int.build.parse_defines=-DCH32RV_PARSE_FLOAT=2
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.float=In float (smallest; the last bit off on one input in eight)
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.float.build.parse_defines=-DCH32RV_PARSE_FLOAT=3
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.double=In double (the nearest float; links double arithmetic)
+ADAFRUIT_METRO_CH32V467.menu.parsefloat.double.build.parse_defines=-DCH32RV_PARSE_FLOAT=1
+
 UIAPDUINO_V003_V14.name=UIAPduino Pro Micro CH32V003 V1.4
 UIAPDUINO_V003_V14.build.board=UIAPDUINO_V003_V14
 UIAPDUINO_V003_V14.build.part=CH32V003F4U6

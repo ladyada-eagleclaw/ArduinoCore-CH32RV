@@ -61,7 +61,8 @@ public:
     uint32_t baud();
 
     /* The Arduino "1200 bps touch": a host that opens the port at 1200 baud
-     * and closes it resets the chip into its factory USB bootloader. On by
+     * and closes it resets the chip into the board's USB bootloader (factory
+     * ISP unless the variant supplies an entry hook). On by
      * default. */
     void setBootTouchEnabled(bool enabled) { _bootTouch = enabled; }
     bool bootTouchEnabled() const { return _bootTouch; }

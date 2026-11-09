@@ -150,5 +150,5 @@ SECTIONS
 
 ASSERT(_data_lma - _highcode_lma == _data_vma - _highcode_vma_start,
        "crt0 copies .highcode and .data in one loop: they must sit alike in flash and RAM")
-ASSERT(_vector_base == 0,
+ASSERT(_vector_base == ORIGIN(FLASH),
        "the interrupt vector table must start at the reset address")
