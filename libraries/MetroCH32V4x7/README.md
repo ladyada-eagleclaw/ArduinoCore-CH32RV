@@ -8,9 +8,9 @@ PCB named Metro CH32V467 has a different pin map and is not covered.
 
 | Name | MCU pad | Notes |
 |---|---|---|
-| D0 / RX | PB7 | USART1 RX, remapped |
-| D1 / TX | PB6 | USART1 TX, remapped |
-| D2 | PB8 | |
+| D0 / RX | PB7 | USART1 RX, remapped; PWM |
+| D1 / TX | PB6 | USART1 TX, remapped; PWM |
+| D2 | PB8 | PWM |
 | D3 | PB9 | PWM |
 | D4 | PC0 | |
 | D5 | PC1 | |
@@ -23,13 +23,13 @@ PCB named Metro CH32V467 has a different pin map and is not covered.
 | D12 | PA9 | PWM; not MISO |
 | D13 / LED_BUILTIN | PB12 | Onboard LED; not SCK |
 | A0 | PA4 | ADC4, DAC1 |
-| A1 | PA3 | ADC3 |
-| A2 | PB0 | ADC8 |
-| A3 | PB1 | ADC9 |
+| A1 | PA3 | ADC3, PWM |
+| A2 | PB0 | ADC8, PWM |
+| A3 | PB1 | ADC9, PWM |
 | A4 | PC4 | ADC14 |
 | A5 | PC5 | ADC15 |
 | SDA / SCL | PB11 / PB10 | Header and STEMMA QT |
-| MOSI / MISO / SCK | PA7 / PA6 / PA5 | Separate SPI header |
+| MOSI / MISO / SCK | PA7 / PA6 / PA5 | Separate SPI header; MOSI and MISO support PWM |
 | PIN_NEOPIXEL | PC14 | One GRB pixel |
 | PIN_BUTTON | PC15 | Active low |
 

@@ -17,6 +17,8 @@
 #include "internal/ch32rv_gpio.h"
 
 // Ten jumper pairs, plus MOSI-MISO on the separate SPI header.
+// USB commands: t full suite, e Ethernet, w new SD file, f flash read,
+// p blank-flash program/erase, b USER button, c SD detect, m header PWM.
 const uint16_t pairs[][2] = {{0,1},{2,3},{4,5},{6,7},{8,9},{10,11},{12,13},
                             {A0,A1},{A2,A3},{A4,A5}};
 TwoWire &stemma = Wire; // The Metro variant routes Wire to PB11/PB10.
@@ -34,6 +36,12 @@ int buttonStable = HIGH;
 unsigned buttonCycles = 0;
 uint32_t buttonChangedAt = 0;
 uint32_t buttonStartedAt = 0;
+bool cardTestActive = false;
+bool cardWasRemoved = false;
+int cardRaw = LOW;
+int cardStable = LOW;
+uint32_t cardChangedAt = 0;
+uint32_t cardStartedAt = 0;
 
 void setup() {
   SerialUSB.setBootTouchEnabled(true);
@@ -64,11 +72,18 @@ void loop() {
     } else if (command == 'b') {
       ran = true;
       startButtonTest();
+    } else if (command == 'c') {
+      ran = true;
+      startCardDetectTest();
+    } else if (command == 'm') {
+      ran = true;
+      testHeaderPWM();
     } else {
       SerialUSB.write(command);
     }
   }
   pollButtonTest();
+  pollCardDetectTest();
   if (millis() - lastBlink >= 500) {
     lastBlink = millis();
     led = !led;
@@ -77,6 +92,96 @@ void loop() {
     metroNeoPixelWrite(color == 0 ? 12 : 0, color == 1 ? 12 : 0, color == 2 ? 12 : 0);
     color = (color + 1) % 3;
   }
+}
+
+void startCardDetectTest() {
+  // SD tests close their volume and stop SDIO before returning to loop().
+  pinMode(PIN_SD_DETECT, INPUT_PULLUP);
+  delay(1);
+  cardRaw = cardStable = digitalRead(PIN_SD_DETECT);
+  cardChangedAt = cardStartedAt = millis();
+  cardWasRemoved = false;
+  cardTestActive = cardStable == LOW;
+  result("SD card detect initially inserted", cardTestActive);
+  SerialUSB.print(cardTestActive ? "SDIO idle: remove and reinsert the card.\n\r"
+                                : "Insert a card, then send c to restart.\n\r");
+}
+
+void pollCardDetectTest() {
+  if (!cardTestActive) return;
+  int raw = digitalRead(PIN_SD_DETECT);
+  if (raw != cardRaw) {
+    cardRaw = raw;
+    cardChangedAt = millis();
+  }
+  if (cardStable != cardRaw && millis() - cardChangedAt >= 50) {
+    cardStable = cardRaw;
+    if (cardStable == HIGH) {
+      cardWasRemoved = true;
+      SerialUSB.print("SD card removed\n\r");
+    } else if (cardWasRemoved) {
+      cardTestActive = false;
+      result("SD card detect remove/reinsert", true);
+      delay(200); // Let the power and data contacts settle before remounting.
+      testSDIO();
+      SerialUSB.print("SD card detect test finished.\n\r");
+    }
+  }
+  if (cardTestActive && millis() - cardStartedAt > 180000) {
+    SerialUSB.print("SD card detect timed out; send c to restart.\n\r");
+    cardTestActive = false;
+  }
+}
+
+void testHeaderPWM() {
+  const uint16_t routes[][2] = {{D0,D1},{D1,D0},{D2,D3},{D3,D2},
+      {D8,D9},{D9,D8},{D10,D11},{D11,D10},{D12,D13},
+      {A1,A0},{A2,A3},{A3,A2},{MISO,MOSI},{MOSI,MISO}};
+  const char *names[] = {"D0","D1","D2","D3","D8","D9","D10",
+      "D11","D12","A1","A2","A3","MISO","MOSI"};
+  Serial.end();
+  SPI.end();
+  releaseHeaders();
+  analogWriteResolution(8);
+  bool allPassed = true;
+  for (unsigned route = 0; route < 14; route++) {
+    uint16_t out = routes[route][0];
+    uint16_t in = routes[route][1];
+    pinMode(in, INPUT);
+    analogWriteFrequency(out, 1000);
+    bool pass = true;
+    SerialUSB.print("PWM "); SerialUSB.print(names[route]);
+    for (unsigned duty = 64; duty <= 192; duty += 64) {
+      analogWrite(out, duty);
+      delay(3);
+      uint32_t high = 0, low = 0;
+      // Poll the physical partner pin so measurement does not claim a timer
+      // shared with the output under test.
+      for (unsigned sample = 0; sample < 8; sample++) {
+        unsigned long highPulse = pulseIn(in, HIGH, 10000);
+        unsigned long lowPulse = pulseIn(in, LOW, 10000);
+        pass &= highPulse != 0 && lowPulse != 0;
+        high += highPulse;
+        low += lowPulse;
+      }
+      high /= 8;
+      low /= 8;
+      int period = high + low;
+      int expectedHigh = duty * 1000 / 256;
+      pass &= abs(period - 1000) <= 20;
+      pass &= abs((int)high - expectedHigh) <= 20;
+      SerialUSB.print(" high/low us="); SerialUSB.print(high);
+      SerialUSB.print('/'); SerialUSB.print(low);
+    }
+    SerialUSB.print("\n\r");
+    result(names[route], pass);
+    allPassed &= pass;
+    analogWrite(out, 0);
+    pinMode(out, INPUT);
+    pinMode(in, INPUT);
+  }
+  pinMode(LED_BUILTIN, OUTPUT);
+  result("All 14 header PWM outputs at 1 kHz, 25/50/75 percent", allPassed);
 }
 
 void startButtonTest() {
