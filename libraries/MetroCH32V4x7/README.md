@@ -86,8 +86,9 @@ Enter TinyUF2 and copy `sketch.uf2` to METRO407 or METRO467. The family ID is
 
 Install **SdFat - Adafruit Fork**. Sketches using `FsVolume` with `MetroSDIO`
 need `-DUSE_BLOCK_DEVICE_INTERFACE=1` in their `build_opt.h`, as in MetroBringup.
-The bench fixture in `extras/MetroBringup/MetroBringup.ino` additionally uses **Sensirion I2C STC42** and its Core
-dependency. Open that sketch directly in the IDE after installing these
+The bench fixture in `extras/MetroBringup/MetroBringup.ino` additionally uses
+**Adafruit SPIFlash**, **Sensirion I2C STC42** and its Core dependency.
+Open that sketch directly in the IDE after installing these
 libraries. It lives in `extras` because the automated bundled-example builds
 do not install external fixture dependencies. USB, Wire, SPI, timer and Network
 libraries come with this core.
@@ -117,12 +118,21 @@ On a physical CH32V467RET6, the following passed:
 - USB echo at 63/64/65, 511/512/513, 4096 and 16384 bytes while Ethernet and
   the NeoPixel were active; 1200-baud entry and UF2 reload without a probe.
 - D13 blink and red/green/blue NeoPixel colors observed on the board.
+- External GD25Q32E flash on SPI3: expected JEDEC identity, full 4 MiB blank
+  read, different patterns programmed/read at the first and last 4 KiB sectors,
+  and both test sectors erased and verified blank afterward.
+- USER button: three debounced press/release cycles. Physical RESET: USB
+  disconnect/reconnect and the complete startup fixture passed again.
 
 Both Arduino variants compile. The full peripheral fixture has **not yet run
-on a 407**; its earlier TinyUF2/blink/USB hardware checks passed. Button presses,
-external flash, exFAT cards, hot removal, SDIO DMA/high-speed modes and native
+on a 407**; its earlier TinyUF2/blink/USB hardware checks passed. exFAT cards,
+hot removal, SDIO DMA/high-speed modes and native
 I3C remain untested or unimplemented.
 
 Send `t` over USB to repeat the read-only run; `e` repeats Ethernet. Send `w`
 once to create and verify a new `METROnn.TST` file (32 KiB, exclusive creation).
 Test files are kept on the card. Startup and `t` do not write files.
+Send `f` to inspect external flash without writing. Send `p` to test its first
+and last sectors: this refuses writes unless the entire flash is blank, then
+programs, verifies, erases and checks those two sectors. Send `b` to monitor
+three USER-button press/release cycles within two minutes.

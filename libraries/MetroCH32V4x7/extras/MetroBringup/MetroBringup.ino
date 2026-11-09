@@ -12,6 +12,7 @@
 #include <MetroPSRAM.h>
 #include <MetroSDIO.h>
 #include <SensirionI2cStc42.h>
+#include <Adafruit_SPIFlashBase.h>
 #include "internal/ch32rv_registers.h"
 #include "internal/ch32rv_gpio.h"
 
@@ -24,6 +25,15 @@ volatile uint32_t ticks = 0;
 bool ran = false;
 uint32_t lastBlink = 0;
 bool led = false;
+Adafruit_FlashTransport_SPI flashTransport(PIN_FLASH_CS, &SPI2);
+Adafruit_SPIFlashBase externalFlash(&flashTransport);
+bool buttonTestActive = false;
+bool buttonWasPressed = false;
+int buttonRaw = HIGH;
+int buttonStable = HIGH;
+unsigned buttonCycles = 0;
+uint32_t buttonChangedAt = 0;
+uint32_t buttonStartedAt = 0;
 
 void setup() {
   SerialUSB.setBootTouchEnabled(true);
@@ -48,10 +58,17 @@ void loop() {
       testSDFile();
     } else if (command == 'e') {
       testEthernet();
+    } else if (command == 'f' || command == 'p') {
+      ran = true;
+      testExternalFlash(command == 'p');
+    } else if (command == 'b') {
+      ran = true;
+      startButtonTest();
     } else {
       SerialUSB.write(command);
     }
   }
+  pollButtonTest();
   if (millis() - lastBlink >= 500) {
     lastBlink = millis();
     led = !led;
@@ -60,6 +77,125 @@ void loop() {
     metroNeoPixelWrite(color == 0 ? 12 : 0, color == 1 ? 12 : 0, color == 2 ? 12 : 0);
     color = (color + 1) % 3;
   }
+}
+
+void startButtonTest() {
+  pinMode(PIN_BUTTON, INPUT_PULLUP);
+  buttonRaw = buttonStable = digitalRead(PIN_BUTTON);
+  buttonChangedAt = buttonStartedAt = millis();
+  buttonCycles = 0;
+  buttonWasPressed = false;
+  buttonTestActive = true;
+  SerialUSB.print("USER button: press and release three times.\n\r");
+  SerialUSB.print("Initial level="); SerialUSB.print(buttonStable);
+  SerialUSB.print(" (released=1, pressed=0)\n\r");
+}
+
+void pollButtonTest() {
+  if (!buttonTestActive) return;
+  int raw = digitalRead(PIN_BUTTON);
+  if (raw != buttonRaw) {
+    buttonRaw = raw;
+    buttonChangedAt = millis();
+  }
+  if (buttonStable != buttonRaw && millis() - buttonChangedAt >= 20) {
+    buttonStable = buttonRaw;
+    if (buttonStable == LOW) {
+      buttonWasPressed = true;
+      SerialUSB.print("USER pressed\n\r");
+    } else if (buttonWasPressed) {
+      buttonWasPressed = false;
+      buttonCycles++;
+      SerialUSB.print("USER released, cycle "); SerialUSB.print(buttonCycles);
+      SerialUSB.print("\n\r");
+      if (buttonCycles == 3) {
+        result("USER button three press/release cycles", true);
+        buttonTestActive = false;
+      }
+    }
+  }
+  if (millis() - buttonStartedAt > 120000) {
+    SerialUSB.print("USER test timed out; send b to restart.\n\r");
+    buttonTestActive = false;
+  }
+}
+
+void testExternalFlash(bool writeTest) {
+  // SPI2 is the third Arduino SPI object. The explicit pins select silicon SPI3.
+  if (!SPI2.setPins(PIN_FLASH_SCK, PIN_FLASH_MISO, PIN_FLASH_MOSI)) {
+    result("External flash SPI pin route", false); return;
+  }
+  flashTransport.begin();
+  flashTransport.setClockSpeed(1000000, 1000000);
+  uint8_t id[3] = {};
+  flashTransport.readCommand(SFLASH_CMD_READ_JEDEC_ID, id, sizeof(id));
+  SerialUSB.print("External flash JEDEC=");
+  for (uint8_t value : id) { SerialUSB.print(value, HEX); SerialUSB.print(' '); }
+  SerialUSB.print(" SPI peripheral="); SerialUSB.print(SPI2.peripheral());
+  SerialUSB.print("\n\r");
+  // The fitted GD25Q32E shares the library's GD25Q32 JEDEC identity.
+  if (id[0] != 0xc8 || id[1] != 0x40 || id[2] != 0x16) {
+    result("External flash GD25Q32 identity", false);
+    flashTransport.end(); return;
+  }
+  bool pass = externalFlash.begin();
+  result("External flash Adafruit_SPIFlash initialization", pass);
+  if (!pass) { flashTransport.end(); return; }
+  flashTransport.setClockSpeed(8000000, 8000000);
+  const uint32_t capacity = externalFlash.size();
+  SerialUSB.print("External flash bytes="); SerialUSB.print(capacity);
+  SerialUSB.print(" status=0x"); SerialUSB.print(externalFlash.readStatus(), HEX);
+  SerialUSB.print("\n\r");
+  if (capacity != 4UL * 1024 * 1024) {
+    result("External flash 4 MiB capacity", false); externalFlash.end(); return;
+  }
+  uint8_t block[256];
+  uint32_t nonblank = 0;
+  for (uint32_t address = 0; address < capacity; address += sizeof(block)) {
+    if (externalFlash.readBuffer(address, block, sizeof(block)) != sizeof(block)) {
+      result("External flash full read", false); externalFlash.end(); return;
+    }
+    for (uint8_t value : block) if (value != 0xff) nonblank++;
+  }
+  result("External flash full 4 MiB read", true);
+  SerialUSB.print("Nonblank bytes="); SerialUSB.print(nonblank); SerialUSB.print("\n\r");
+  if (!writeTest) {
+    SerialUSB.print("Flash read-only inspection finished.\n\r");
+    externalFlash.end(); return;
+  }
+  // Never overwrite an existing flash image or filesystem. This command only
+  // tests an entirely blank device, then returns its two test sectors to blank.
+  if (nonblank) {
+    SerialUSB.print("Flash write test refused: existing data present.\n\r");
+    externalFlash.end(); return;
+  }
+  const uint32_t addresses[] = {0, capacity - 4096};
+  for (unsigned region = 0; region < 2 && pass; region++) {
+    for (unsigned offset = 0; offset < 4096 && pass; offset += sizeof(block)) {
+      for (unsigned i = 0; i < sizeof(block); i++)
+        block[i] = (i * 37 + offset / 256 * 13 + region * 71) % 256;
+      pass = externalFlash.writeBuffer(addresses[region] + offset, block, sizeof(block)) == sizeof(block);
+    }
+  }
+  for (unsigned region = 0; region < 2 && pass; region++) {
+    for (unsigned offset = 0; offset < 4096 && pass; offset += sizeof(block)) {
+      pass = externalFlash.readBuffer(addresses[region] + offset, block, sizeof(block)) == sizeof(block);
+      for (unsigned i = 0; i < sizeof(block); i++)
+        if (block[i] != (i * 37 + offset / 256 * 13 + region * 71) % 256) pass = false;
+    }
+  }
+  result("External flash first/last 4 KiB program and readback", pass);
+  bool erased = true;
+  for (uint32_t address : addresses) {
+    erased &= externalFlash.eraseSector(address / 4096);
+    for (unsigned offset = 0; offset < 4096; offset += sizeof(block)) {
+      erased &= externalFlash.readBuffer(address + offset, block, sizeof(block)) == sizeof(block);
+      for (uint8_t value : block) if (value != 0xff) erased = false;
+    }
+  }
+  result("External flash test sectors erased and verified blank", erased);
+  externalFlash.end();
+  SerialUSB.print("Flash write test finished.\n\r");
 }
 
 void result(const char *name, bool pass) {
