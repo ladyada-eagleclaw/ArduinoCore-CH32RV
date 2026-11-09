@@ -67,7 +67,7 @@ python uf2conv.py -c -f 0x7b8c32a7 -b 0x8000 -o sketch.uf2 sketch.bin
 ```
 
 Enter TinyUF2 and copy `sketch.uf2` to METRO407 or METRO467. The family ID is
-provisional until its registry request is accepted. The bootloader port is
+[registered as CH32V4X7](https://github.com/microsoft/uf2/pull/109). The bootloader port is
 [adafruit/tinyuf2#639](https://github.com/adafruit/tinyuf2/pull/639).
 
 ## Board helpers
